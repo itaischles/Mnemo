@@ -4,6 +4,10 @@ load_dotenv()  # Must be first — loads GEMINI_API_KEY and FIREBASE_CREDENTIALS
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import router
+from database.firebase_client import get_db
+
+# Initialize Firebase Admin SDK eagerly at startup
+get_db()
 
 app = FastAPI(title="Mnemo API", version="1.0.0")
 
