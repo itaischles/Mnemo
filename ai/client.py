@@ -1,8 +1,11 @@
 import os
 import json
+import logging
 import google.generativeai as genai
 from dotenv import load_dotenv
 from config import GEMINI_MODEL
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -34,16 +37,18 @@ def call_gemini(system_prompt: str, user_prompt: str) -> dict:
     try:
         response = model.generate_content(raw_prompt)
         text = response.text.strip()
+        logger.info(f"Gemini raw response (first 200 chars): {text[:200]}")
 
         # Strip accidental code fences if the model ignored instructions
         if text.startswith("```"):
             lines = text.split("\n")
-            # drop first line (```json or ```) and last line (```)
             text = "\n".join(lines[1:-1]).strip()
 
         return json.loads(text)
 
     except json.JSONDecodeError as e:
+        logger.error(f"Gemini JSON parse failed: {e} | Raw: {text!r}")
         raise ValueError(f"Gemini returned non-JSON response: {e}\nRaw: {text!r}")
     except Exception as e:
+        logger.error(f"Gemini API call failed: {e}")
         raise RuntimeError(f"Gemini API call failed: {e}")

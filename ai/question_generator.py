@@ -1,6 +1,9 @@
+import logging
 from datetime import datetime, timezone
 from ai.client import call_gemini
 from config import CARDS_PER_SECTION
+
+logger = logging.getLogger(__name__)
 
 _CARD_GEN_SYSTEM = """You are an expert educator creating spaced repetition flashcards.
 Generate cards that test deep conceptual understanding, not surface recall.
@@ -37,8 +40,10 @@ Return a JSON array of card objects, each with:
             for key in ("cards", "flashcards", "items"):
                 if key in result and isinstance(result[key], list):
                     return result[key]
+        logger.warning(f"Unexpected Gemini response shape: {result}")
         return []
-    except (ValueError, RuntimeError):
+    except Exception as e:
+        logger.error(f"Card generation Gemini call failed: {e}")
         return []
 
 
