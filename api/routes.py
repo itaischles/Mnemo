@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 
@@ -236,10 +237,12 @@ def _generate_cards_for_topic(uid: str, topic: dict):
     logger.info(f"Starting card generation for topic '{topic['name']}' (slug: {topic['wikipedia_slug']})")
     try:
         sections = fetch_wikipedia_sections(topic["wikipedia_slug"])
-        logger.info(f"Fetched {len(sections)} sections from Wikipedia")
     except Exception as e:
         logger.error(f"Wikipedia fetch failed for '{topic['wikipedia_slug']}': {e}")
         return
+
+    sections = sections[:10]  # cap at 10 sections to stay within free API quota
+    logger.info(f"Processing {len(sections)} sections from Wikipedia")
 
     count = 0
     for section in sections:
@@ -249,6 +252,7 @@ def _generate_cards_for_topic(uid: str, topic: dict):
         except Exception as e:
             logger.error(f"Card generation failed for section '{section['title']}': {e}")
             continue
+        time.sleep(4)  # stay under 15 req/min free tier limit
         for card_data in cards:
             try:
                 now = datetime.now(timezone.utc)
