@@ -1,5 +1,9 @@
+import logging
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from api.auth import get_current_uid
 from api.models import (
@@ -229,29 +233,41 @@ async def get_history(uid: str = Depends(get_current_uid)):
 
 def _generate_cards_for_topic(uid: str, topic: dict):
     """Fetch Wikipedia sections and generate cards for each section."""
+    logger.info(f"Starting card generation for topic '{topic['name']}' (slug: {topic['wikipedia_slug']})")
     try:
         sections = fetch_wikipedia_sections(topic["wikipedia_slug"])
-    except ValueError:
+        logger.info(f"Fetched {len(sections)} sections from Wikipedia")
+    except Exception as e:
+        logger.error(f"Wikipedia fetch failed for '{topic['wikipedia_slug']}': {e}")
         return
 
     count = 0
     for section in sections:
-        cards = generate_cards_for_section(topic["name"], section["text"])
+        try:
+            cards = generate_cards_for_section(topic["name"], section["text"])
+            logger.info(f"Section '{section['title']}': generated {len(cards)} cards")
+        except Exception as e:
+            logger.error(f"Card generation failed for section '{section['title']}': {e}")
+            continue
         for card_data in cards:
-            now = datetime.now(timezone.utc)
-            card_data.update({
-                "topic_id": topic["id"],
-                "sm2": {
-                    "ease_factor": 2.5,
-                    "interval_days": 1,
-                    "repetitions": 0,
-                    "due_date": now,
-                    "last_reviewed": None,
-                },
-            })
-            crud.create_card(uid, card_data)
-            count += 1
+            try:
+                now = datetime.now(timezone.utc)
+                card_data.update({
+                    "topic_id": topic["id"],
+                    "sm2": {
+                        "ease_factor": 2.5,
+                        "interval_days": 1,
+                        "repetitions": 0,
+                        "due_date": now,
+                        "last_reviewed": None,
+                    },
+                })
+                crud.create_card(uid, card_data)
+                count += 1
+            except Exception as e:
+                logger.error(f"Failed to save card to Firestore: {e}")
 
+    logger.info(f"Card generation complete for topic '{topic['name']}': {count} cards saved")
     crud.update_topic(uid, topic["id"], {"card_count": count})
 
 
