@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mnemo" />
+  <title>Mnemo</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged,
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBPv05LQmERjTCbMCfKgOboM6eFRViDXEs",
+      authDomain: "mnemo-61b0e.firebaseapp.com",
+      projectId: "mnemo-61b0e",
+      storageBucket: "mnemo-61b0e.firebasestorage.app",
+      messagingSenderId: "989585025861",
+      appId: "1:989585025861:web:c96d77e4d84937d07cec2c",
+      measurementId: "G-M2R0JSC7R6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // Expose to React app via window
+    window.__mnemoAuth = auth;
+    window.__mnemoSignIn = () => signInWithPopup(auth, provider);
+    window.__mnemoSignOut = () => signOut(auth);
+    window.__mnemoOnAuthStateChanged = (cb) => onAuthStateChanged(auth, cb);
+    window.__mnemoGetToken = () => auth.currentUser?.getIdToken();
+  </script>
+
+  <!-- React + Babel (for JSX without a build step) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body { background-color: #0f172a; color: #f1f5f9; font-family: system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Load the React app -->
+  <script type="text/babel" src="/src/App.jsx" data-type="module"></script>
+
+  <script>
+    // Register service worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service_worker.js");
+      });
+    }
+  </script>
+</body>
+</html>

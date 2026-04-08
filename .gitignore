@@ -1,0 +1,41 @@
+# Environment & secrets
+.env
+firebase_credentials.json
+gemini_api_key
+firebase_configuration
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Node (if any tooling added)
+node_modules/
+
+# Firebase
+.firebase/
+firebase-debug.log
