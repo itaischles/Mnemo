@@ -5,7 +5,7 @@ const { useState, useEffect, useCallback, useRef } = React;
 
 // ── Config ────────────────────────────────────────────────────────────────────
 // Replace with your actual Render.com backend URL after deploying
-const API_BASE = "https://mnemo-backend.onrender.com";
+const API_BASE = "https://mnemo-backend-aa7c.onrender.com";
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 async function getToken() {
