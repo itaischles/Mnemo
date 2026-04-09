@@ -130,7 +130,7 @@ def get_review_logs_for_card(uid: str, card_id: str, limit: int = 10) -> list[di
         .where(filter=FieldFilter("card_id", "==", card_id))
         .order_by("reviewed_at")
         .limit_to_last(limit)
-        .stream()
+        .get()
     )
     return [{"id": d.id, **d.to_dict()} for d in docs]
 
@@ -140,7 +140,7 @@ def get_recent_review_logs(uid: str, limit: int = 50) -> list[dict]:
         _review_logs(uid)
         .order_by("reviewed_at")
         .limit_to_last(limit)
-        .stream()
+        .get()
     )
     return [{"id": d.id, **d.to_dict()} for d in docs]
 
@@ -169,7 +169,7 @@ def get_sessions(uid: str, limit: int = 30) -> list[dict]:
         _sessions(uid)
         .order_by("date")
         .limit_to_last(limit)
-        .stream()
+        .get()
     )
     return [{"id": d.id, **d.to_dict()} for d in docs]
 
