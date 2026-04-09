@@ -125,23 +125,20 @@ def create_review_log(uid: str, data: dict) -> dict:
 
 
 def get_review_logs_for_card(uid: str, card_id: str, limit: int = 10) -> list[dict]:
+    # No order_by — avoids requiring a composite index. Order doesn't matter
+    # for extracting missing concepts / misconceptions from recent history.
     docs = (
         _review_logs(uid)
         .where(filter=FieldFilter("card_id", "==", card_id))
-        .order_by("reviewed_at")
-        .limit_to_last(limit)
-        .get()
+        .limit(limit)
+        .stream()
     )
     return [{"id": d.id, **d.to_dict()} for d in docs]
 
 
 def get_recent_review_logs(uid: str, limit: int = 50) -> list[dict]:
-    docs = (
-        _review_logs(uid)
-        .order_by("reviewed_at")
-        .limit_to_last(limit)
-        .get()
-    )
+    # Simple stream ordered by Firestore default — avoids limit_to_last restriction.
+    docs = _review_logs(uid).order_by("reviewed_at").limit(limit).stream()
     return [{"id": d.id, **d.to_dict()} for d in docs]
 
 
@@ -165,12 +162,7 @@ def create_session(uid: str, data: dict) -> dict:
 
 
 def get_sessions(uid: str, limit: int = 30) -> list[dict]:
-    docs = (
-        _sessions(uid)
-        .order_by("date")
-        .limit_to_last(limit)
-        .get()
-    )
+    docs = _sessions(uid).order_by("date").limit(limit).stream()
     return [{"id": d.id, **d.to_dict()} for d in docs]
 
 

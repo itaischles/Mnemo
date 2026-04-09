@@ -111,14 +111,18 @@ async def get_today_session(uid: str = Depends(get_current_uid)):
 
         topic_name = topics_cache[topic_id]
 
-        # Fetch recent review history for dynamic question generation
-        history = crud.get_review_logs_for_card(uid, card["id"], limit=5)
-
-        # Generate a fresh question variant adapted to mastery level
-        dynamic_question = generate_review_question(
-            {**card, "topic_name": topic_name},
-            history,
-        )
+        # Only fetch history and rephrase if the card has been reviewed before.
+        # For new cards (repetitions == 0) there is no history to adapt to,
+        # so use the stored question directly — saves Gemini API calls.
+        repetitions = card.get("sm2", {}).get("repetitions", 0)
+        if repetitions > 0:
+            history = crud.get_review_logs_for_card(uid, card["id"], limit=5)
+            dynamic_question = generate_review_question(
+                {**card, "topic_name": topic_name},
+                history,
+            )
+        else:
+            dynamic_question = card.get("question", "")
 
         cards_out.append({
             "id": card["id"],
